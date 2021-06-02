@@ -81,6 +81,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VMware.Http.Sso.Authenticat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VMware.ScriptRuntimeService.RunspaceProviders.Types", "RunspaceProviders\VMware.ScriptRuntimeService.RunspaceProviders.Types\VMware.ScriptRuntimeService.RunspaceProviders.Types.csproj", "{C556EC50-75CE-4F56-AC45-A408ED538BCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VMware.ScriptRuntimeService.AdminWebApi", "Admin\VMware.ScriptRuntimeService.AdminWebApi\VMware.ScriptRuntimeService.AdminWebApi.csproj", "{2361013B-4395-4AED-A56C-D52B75FB074A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -191,6 +193,10 @@ Global
 		{C556EC50-75CE-4F56-AC45-A408ED538BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C556EC50-75CE-4F56-AC45-A408ED538BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C556EC50-75CE-4F56-AC45-A408ED538BCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2361013B-4395-4AED-A56C-D52B75FB074A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2361013B-4395-4AED-A56C-D52B75FB074A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2361013B-4395-4AED-A56C-D52B75FB074A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2361013B-4395-4AED-A56C-D52B75FB074A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,6 +236,7 @@ Global
 		{52FF9529-70F3-42D5-B823-E93178F73EF0} = {B3A427DB-A820-461F-8CBF-566D7DED21EE}
 		{0E9887B9-A54D-47E1-94AB-552582AEF1F8} = {D8291926-5C71-4F88-9162-9A4999D3C528}
 		{C556EC50-75CE-4F56-AC45-A408ED538BCC} = {2B2A9AE4-FF08-441D-9E61-3FE9CB2024F5}
+		{2361013B-4395-4AED-A56C-D52B75FB074A} = {16F25C88-009D-4A29-A7F5-47C445AD4C50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7CED3298-AD02-4789-8013-1D524A3F0B9E}
