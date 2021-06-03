@@ -5,11 +5,16 @@
 
 namespace VMware.ScriptRuntimeService.AdminWebApi
 {
-   public class AdminSettings
+   public class VCRegistrationSettings
    {
-      public string ServiceHostname { get; set; }
-      public string TlsCertificatePath { get; set; }
-      public string SolutionUserSigningCertificatePath { get; set; }
-      public string VCRegistrationConfigMap { get; set; }
+      public string VCenterServer { get; set; }
+
+      public string StsRealm { get; set; }
+
+      public string StsServiceEndpoint { get; set; }
+
+      public string SolutionServiceId { get; set; }
+
+      public string SolutionOwnerId { get; set; }      
    }
 }

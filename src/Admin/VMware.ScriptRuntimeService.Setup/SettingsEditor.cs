@@ -52,6 +52,11 @@ namespace VMware.ScriptRuntimeService.Setup {
          };
       }
 
+      public void AddSettings(object settings)
+      {
+         _settingsJson = JToken.FromObject(settings);
+      }
+
       public string GetSettingsJsonContent() {
          return JsonConvert.SerializeObject(_settingsJson, Formatting.Indented);
       }

@@ -75,5 +75,19 @@ namespace VMware.ScriptRuntimeService.Setup.ConfigFileWriters
             { configMapDataKey, settingsJson }
          });
       }
+
+      public void WriteSettings(string settingsName, object settingsObject)
+      {
+         string configMapName = settingsName;
+         string configMapDataKey = $"{settingsName}.json";
+
+         _logger.LogInformation($"Writing k8s config map with settingsName settings");
+         var settingsEditor = new SettingsEditor();
+         settingsEditor.AddSettings(settingsObject);
+         var settingsJson = settingsEditor.GetSettingsJsonContent();
+         _k8sClient.RecreateConfigMap(configMapName, new Dictionary<string, string> {
+            { configMapDataKey, settingsJson }
+         });
+      }
    }
 }

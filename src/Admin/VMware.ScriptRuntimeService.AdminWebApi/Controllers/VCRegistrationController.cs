@@ -18,6 +18,7 @@ using VMware.ScriptRuntimeService.AdminWebApi.DataTypes;
 using VMware.ScriptRuntimeService.Ls;
 using VMware.ScriptRuntimeService.Setup;
 using VMware.ScriptRuntimeService.Setup.ConfigFileWriters;
+using VMware.ScriptRuntimeService.Setup.K8sClient;
 using VMware.ScriptRuntimeService.Setup.TlsTrustValidators;
 using VMware.ScriptRuntimeService.SsoAdmin;
 
@@ -31,6 +32,7 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
       private readonly ILogger _logger;
       private IConfiguration _configuration;
       private AdminSettings _adminSettings;
+      private K8sSettings _k8sSettings;
 
       public VCRegistrationController(IConfiguration Configuration, ILoggerFactory loggerFactory)
       {
@@ -38,6 +40,13 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
          _adminSettings = _configuration.
                GetSection("AdminSettings").
                Get<AdminSettings>();
+         _k8sSettings = _configuration.
+               GetSection("K8sSettings").
+               Get<K8sSettings>();
+         if (_k8sSettings.ClusterEndpoint == null)
+         {
+            _k8sSettings = null;
+         }
          _loggerFactory = loggerFactory;
          _logger = _loggerFactory.CreateLogger(typeof(VCRegistrationController));
       }
@@ -59,9 +68,9 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
       }
 
       [HttpPost]
-      [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]      
+      [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]
       [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status500InternalServerError)]
-      public ActionResult<VCRegistrationInfo> Post([FromBody]VCRegistrationInfo vcRegistrationInfo)
+      public ActionResult<VCRegistrationInfo> Post([FromBody] VCRegistrationInfo vcRegistrationInfo)
       {
          ActionResult<VCRegistrationInfo> result = null;
 
@@ -73,15 +82,18 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
 
             var secureVcPassword = SecurePassword(vcRegistrationInfo.Password);
 
-            X509CertificateValidator certificateValidator = new SpecifiedCertificateThumbprintValidator(vcRegistrationInfo.VCTlsCertificateThumbprint);            
+            var vcRegistrationSettings = new VCRegistrationSettings();
+            vcRegistrationSettings.VCenterServer = vcRegistrationInfo.VCAddress;
+
+            X509CertificateValidator certificateValidator = new SpecifiedCertificateThumbprintValidator(vcRegistrationInfo.VCTlsCertificateThumbprint);
 
             var lookupServiceClient = new LookupServiceClient(
                vcRegistrationInfo.VCAddress,
                certificateValidator);
 
             var serviceSettings = SetupServiceSettings.NewService(
-                  new X509Certificate2(_adminSettings.TlsCertificatePath),
-                  new X509Certificate2(_adminSettings.SolutionUserSigningCertificatePath),
+                  new X509Certificate2(_adminSettings.TlsCertificatePath, SecurePassword("test_cert")),
+                  new X509Certificate2(_adminSettings.SolutionUserSigningCertificatePath, SecurePassword("test_cert")),
                   _adminSettings.ServiceHostname,
                   443);
 
@@ -90,13 +102,17 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             _logger.LogDebug($"Service ServiceId: {serviceSettings.ServiceId}");
             _logger.LogDebug($"Service Endpoint Url: {serviceSettings.EndpointUrl}");
 
+            vcRegistrationSettings.SolutionOwnerId = serviceSettings.OwnerId;
+            vcRegistrationSettings.SolutionServiceId = serviceSettings.ServiceId;            
+
             var ssoSdkUri = lookupServiceClient.GetSsoAdminEndpointUri();
             var stsUri = lookupServiceClient.GetStsEndpointUri();
             _logger.LogDebug($"Resolved SSO SDK Endpoint: {ssoSdkUri}");
             _logger.LogDebug($"Resolved Sts Endpoint: {stsUri}");
 
-            var ssoAdminClient = new SsoAdminClient(ssoSdkUri, stsUri, certificateValidator);
+            vcRegistrationSettings.StsServiceEndpoint = stsUri.ToString();
 
+            var ssoAdminClient = new SsoAdminClient(ssoSdkUri, stsUri, certificateValidator);
 
             // --- SSO Solution User Registration ---
             var ssoSolutionRegitration = new SsoSolutionUserRegistration(
@@ -105,6 +121,10 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
                ssoAdminClient);
 
             ssoSolutionRegitration.CreateSolutionUser(vcRegistrationInfo.UserName, secureVcPassword);
+
+            vcRegistrationSettings.StsRealm = ssoSolutionRegitration.GetTrustedCertificate(
+              vcRegistrationInfo.UserName,
+              secureVcPassword)?.Thumbprint;
             // --- SSO Solution User Registration ---
 
             // --- Lookup Service Registration ---
@@ -115,13 +135,18 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             lsRegistration.Register(vcRegistrationInfo.UserName, secureVcPassword);
             // --- Lookup Service Registration ---
 
+            var configWriter = new K8sConfigWriter(_loggerFactory, _k8sSettings);
             // --- Store VC CA certificates ---
             var trustedCertificatesStore = new TrustedCertificatesStore(
                _loggerFactory,
                ssoAdminClient,
-               new K8sConfigWriter(_loggerFactory, null));
+               configWriter);
             trustedCertificatesStore.SaveVcenterCACertficates();
             // --- Store VC CA certificates ---
+
+            // --- Save VC Registration Settings ---
+            configWriter.WriteSettings(_adminSettings.VCRegistrationConfigMap, vcRegistrationSettings);
+            // --- Save VC Registration Settings ---
          }
          catch (Exception exc)
          {
@@ -129,6 +154,38 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
          }
 
          return result;
+      }
+
+      [HttpDelete]
+      [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]
+      [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status500InternalServerError)]
+      public void Delete([FromBody] VCRegistrationInfo vcRegistrationInfo)
+      {
+         try
+         {
+            _logger.LogDebug($"User Input VC: {vcRegistrationInfo.VCAddress}");
+            _logger.LogDebug($"User Input VC User: {vcRegistrationInfo.UserName}");
+            _logger.LogDebug($"User Input VC Thumbprint: {vcRegistrationInfo.VCTlsCertificateThumbprint}");
+
+            var secureVcPassword = SecurePassword(vcRegistrationInfo.Password);
+
+            X509CertificateValidator certificateValidator = new SpecifiedCertificateThumbprintValidator(vcRegistrationInfo.VCTlsCertificateThumbprint);
+
+            var lookupServiceClient = new LookupServiceClient(
+               vcRegistrationInfo.VCAddress,
+               certificateValidator);
+
+            var ssoSdkUri = lookupServiceClient.GetSsoAdminEndpointUri();
+            var stsUri = lookupServiceClient.GetStsEndpointUri();
+            _logger.LogDebug($"Resolved SSO SDK Endpoint: {ssoSdkUri}");
+            _logger.LogDebug($"Resolved Sts Endpoint: {stsUri}");
+
+            var ssoAdminClient = new SsoAdminClient(ssoSdkUri, stsUri, certificateValidator);            
+         }
+         catch (Exception exc)
+         {
+            StatusCode(500, new ErrorDetails(exc));
+         }
       }
    }
 }
