@@ -92,8 +92,8 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
                certificateValidator);
 
             var serviceSettings = SetupServiceSettings.NewService(
-                  new X509Certificate2(_adminSettings.TlsCertificatePath, SecurePassword("test_cert")),
-                  new X509Certificate2(_adminSettings.SolutionUserSigningCertificatePath, SecurePassword("test_cert")),
+                  new X509Certificate2(_adminSettings.TlsCertificatePath),
+                  new X509Certificate2(_adminSettings.SolutionUserSigningCertificatePath),
                   _adminSettings.ServiceHostname,
                   443);
 
@@ -147,6 +147,7 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             // --- Save VC Registration Settings ---
             configWriter.WriteSettings(_adminSettings.VCRegistrationConfigMap, vcRegistrationSettings);
             // --- Save VC Registration Settings ---
+            result = Ok();
          }
          catch (Exception exc)
          {
@@ -158,9 +159,11 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
 
       [HttpDelete]
       [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]
+      [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status404NotFound)]
       [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status500InternalServerError)]
-      public void Delete([FromBody] VCRegistrationInfo vcRegistrationInfo)
+      public ActionResult Delete([FromBody] VCRegistrationInfo vcRegistrationInfo)
       {
+         ActionResult result = Ok();
          try
          {
             _logger.LogDebug($"User Input VC: {vcRegistrationInfo.VCAddress}");
@@ -180,12 +183,35 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             _logger.LogDebug($"Resolved SSO SDK Endpoint: {ssoSdkUri}");
             _logger.LogDebug($"Resolved Sts Endpoint: {stsUri}");
 
-            var ssoAdminClient = new SsoAdminClient(ssoSdkUri, stsUri, certificateValidator);            
+            var ssoAdminClient = new SsoAdminClient(ssoSdkUri, stsUri, certificateValidator);
+
+            var configWriter = new K8sConfigWriter(_loggerFactory, _k8sSettings);
+            var vcRegistrationSettings = configWriter.ReadSettings<VCRegistrationSettings>(_adminSettings.VCRegistrationConfigMap);
+            if (vcRegistrationSettings != null &&
+                vcRegistrationSettings.VCenterServer == vcRegistrationInfo.VCAddress)
+            {
+               _logger.LogDebug($"Delete SRS Solution User: {vcRegistrationSettings.SolutionOwnerId}");               
+               ssoAdminClient.DeleteLocalPrincipal(vcRegistrationInfo.UserName, secureVcPassword, vcRegistrationSettings.SolutionOwnerId);
+
+               _logger.LogDebug("Remove Lookup Service registration");
+               var lsRegistration = new LookupServiceRegistration(
+                  _loggerFactory,
+                  new SetupServiceSettings(vcRegistrationSettings.SolutionServiceId),
+                  lookupServiceClient);
+               lsRegistration.Deregister(vcRegistrationInfo.UserName, secureVcPassword);
+
+               configWriter.DeleteSettings(_adminSettings.VCRegistrationConfigMap);
+
+            } else
+            {
+               result = StatusCode(StatusCodes.Status404NotFound, new ErrorDetails(new Exception($"No SRS registration found for vCenter Server: {vcRegistrationInfo.VCAddress}")));
+            }
          }
          catch (Exception exc)
          {
-            StatusCode(500, new ErrorDetails(exc));
+            result = StatusCode(500, new ErrorDetails(exc));
          }
+         return result;
       }
    }
 }

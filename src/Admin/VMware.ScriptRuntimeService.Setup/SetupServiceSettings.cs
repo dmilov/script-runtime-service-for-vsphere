@@ -24,11 +24,15 @@ namespace VMware.ScriptRuntimeService.Setup {
       #endregion
       
       #region Constructors
-      public SetupServiceSettings() {
+      public SetupServiceSettings() : this(Guid.NewGuid().ToString()) {         
+      }
+
+      public SetupServiceSettings(string serviceId)
+      {
          NodeId = Guid.NewGuid().ToString();
          OwnerId = "ScriptRuntimeService-SolutionOwner";
          ServiceDescriptionResourceKey = "srs.ServiceDescritpion";
-         ServiceId = Guid.NewGuid().ToString();
+         ServiceId = serviceId;
          ServiceNameResourceKey = "srs.ServiceName";
          ServiceVersion = "1.0";
          ServiceTypeProduct = "com.vmware.srs";
