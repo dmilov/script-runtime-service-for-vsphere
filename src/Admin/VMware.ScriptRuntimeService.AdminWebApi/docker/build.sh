@@ -4,8 +4,7 @@ IMAGE_NAME=$1
 DOTNET_COMMAND=$2
 DOCKER_COMMAND=$3
 PRODUCT_VERSION=$4
-PRODUCT_VERSION_SUFFIX=$5
-IMAGE_VERSION=$6
+IMAGE_VERSION=$5
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -46,7 +45,7 @@ echo "INFO: dotnet publish $SERVICE_SRC_DIR"
 # The command below publishes all the dependencies in the output folder
 $DOTNET_COMMAND publish $SERVICE_SRC_DIR -c Release -f netcoreapp3.1 -o $SERVICE_DESTINATION_DIR
 echo "INFO: dotnet build with Product Version: $PRODUCT_VERSION, Version Suffix: $PRODUCT_VERSION_SUFFIX"
-$DOTNET_COMMAND build $SERVICE_SRC_DIR -c Release -f netcoreapp3.1 -r linux-x64 -p:Version="$PRODUCT_VERSION-$PRODUCT_VERSION_SUFFIX" -o $SERVICE_DESTINATION_DIR
+$DOTNET_COMMAND build $SERVICE_SRC_DIR -c Release -f netcoreapp3.1 -r linux-x64 -p:Version="$PRODUCT_VERSION" -o $SERVICE_DESTINATION_DIR
 
 echo "INFO: Building $IMAGE_NAME image"
 cd $SCRIPT_DIR
