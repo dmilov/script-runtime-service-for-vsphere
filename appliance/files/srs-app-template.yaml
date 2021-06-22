@@ -97,6 +97,76 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  name: srs-admin
+  namespace: script-runtime-service
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: manage-admin-configs
+  namespace: script-runtime-service
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: srs-admin-settings
+  namespace: script-runtime-service
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: manage-admin-configs
+subjects:
+- kind: ServiceAccount
+  name: srs-admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: srs-admin-api
+  name: srs-admin-api
+  namespace: script-runtime-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: srs-admin-api
+  template:
+    metadata:
+      labels:
+        app: srs-admin-api
+    spec:
+      serviceAccountName: srs-admin
+      containers:
+        - image: "srs-admin-api:1.0"
+          imagePullPolicy: IfNotPresent
+          name: srs-admin-api          
+          ports:
+            - containerPort: 5480
+              protocol: TCP      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  srs-admin-api
+  namespace: script-runtime-service
+spec:
+  ports:
+  - port: 5480
+    protocol: TCP
+    targetPort: 5480
+  selector:
+    app: srs-admin-api
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
   name: srs-runspace-provider
   namespace: script-runtime-service
 ---
@@ -223,3 +293,7 @@ spec:
         backend:
           serviceName: srs-apigateway
           servicePort: 5050
+      - path: /admin
+        backend:
+          serviceName: srs-admin-api
+          servicePort: 5480
