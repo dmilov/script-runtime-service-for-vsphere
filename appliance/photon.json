@@ -13,7 +13,7 @@
       "insecure_connection": true,
       "guest_os_type": "Other",
       "version": "13",
-      "disk_size": "20480",
+      "disk_size": "40960",
       "boot_command": [
         "<esc><wait>",
         "vmlinuz initrd=initrd.img root=/dev/ram0 loglevel=3 ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/photon-kickstart.json photon.media=cdrom",
