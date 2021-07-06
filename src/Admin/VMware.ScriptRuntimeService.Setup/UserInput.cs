@@ -73,37 +73,49 @@ namespace VMware.ScriptRuntimeService.Setup {
       /// If user input is not valid exception with invalid properties is thrown
       /// </summary>
       /// <param name="setupFlowType"></param>      
-      public void EnsureIsValid(SetupFlowType setupFlowType) {         
-         if (string.IsNullOrEmpty(Psc)) {
-            throw new InvalidUserInputException("VC IP/FQDN is not specified");
-         }
-         if (string.IsNullOrEmpty(User)) {
-            throw new InvalidUserInputException("VC Username is not specified");
-         }
-         if (Password == null) {
-            throw new InvalidUserInputException("VC Password is not specified");
-         }
-
-         if (setupFlowType == SetupFlowType.UnregisterFromVC || 
-             setupFlowType == SetupFlowType.UpdateTlsCertificate) {
-            if (string.IsNullOrEmpty(StsSettingsPath)) {
-               throw new InvalidUserInputException("StsSettings file path is not specified");
+      public void EnsureIsValid(SetupFlowType setupFlowType) {
+         if (setupFlowType != SetupFlowType.InitialSetup)
+         {
+            if (string.IsNullOrEmpty(Psc))
+            {
+               throw new InvalidUserInputException("VC IP/FQDN is not specified");
+            }
+            if (string.IsNullOrEmpty(User))
+            {
+               throw new InvalidUserInputException("VC Username is not specified");
+            }
+            if (Password == null)
+            {
+               throw new InvalidUserInputException("VC Password is not specified");
             }
 
-            if (!File.Exists(StsSettingsPath)) {
-               throw new InvalidUserInputException($"StsSettings file not found '{StsSettingsPath}'");
-            }
-         }
+            if (setupFlowType == SetupFlowType.UnregisterFromVC ||
+                setupFlowType == SetupFlowType.UpdateTlsCertificate)
+            {
+               if (string.IsNullOrEmpty(StsSettingsPath))
+               {
+                  throw new InvalidUserInputException("StsSettings file path is not specified");
+               }
 
-         if (setupFlowType == SetupFlowType.UpdateTlsCertificate) {
-            if (string.IsNullOrEmpty(TlsCertificatePath)) {
-               throw new InvalidUserInputException("TlsCertificatePath file path is not specified");
+               if (!File.Exists(StsSettingsPath))
+               {
+                  throw new InvalidUserInputException($"StsSettings file not found '{StsSettingsPath}'");
+               }
             }
 
-            if (!File.Exists(TlsCertificatePath)) {
-               throw new InvalidUserInputException($"StsSettings file not found '{TlsCertificatePath}'");
+            if (setupFlowType == SetupFlowType.UpdateTlsCertificate)
+            {
+               if (string.IsNullOrEmpty(TlsCertificatePath))
+               {
+                  throw new InvalidUserInputException("TlsCertificatePath file path is not specified");
+               }
+
+               if (!File.Exists(TlsCertificatePath))
+               {
+                  throw new InvalidUserInputException($"StsSettings file not found '{TlsCertificatePath}'");
+               }
             }
-         }
+         }        
       }
    }
 }

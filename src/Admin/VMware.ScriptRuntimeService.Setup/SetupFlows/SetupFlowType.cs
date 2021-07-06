@@ -1,5 +1,5 @@
 ﻿// **************************************************************************
-//  Copyright 2020 VMware, Inc.
+//  Copyright 2020-2021 VMware, Inc.
 //  SPDX-License-Identifier: Apache-2.0
 // **************************************************************************
 
@@ -10,6 +10,7 @@ using System.Text;
 namespace VMware.ScriptRuntimeService.Setup.SetupFlows
 {
    public enum SetupFlowType {
+      InitialSetup,
       RegisterWithVC,
       UnregisterFromVC,
       UpdateTlsCertificate,

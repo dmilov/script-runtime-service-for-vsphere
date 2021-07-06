@@ -15,6 +15,9 @@ namespace VMware.ScriptRuntimeService.Setup.SetupFlows
          ISetupFlow result = null;
          switch (setupFlowType) {
             default:
+            case SetupFlowType.InitialSetup:
+               result = new InitialSetupFlow(loggerFactory);
+               break;
             case SetupFlowType.RegisterWithVC:
                result = new RegisterWithVCSetupFlow(loggerFactory);
                break;
