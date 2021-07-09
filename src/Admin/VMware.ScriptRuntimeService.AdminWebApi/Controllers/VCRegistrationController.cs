@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Selectors;
@@ -147,6 +148,18 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             // --- Save VC Registration Settings ---
             configWriter.WriteSettings(_adminSettings.VCRegistrationConfigMap, vcRegistrationSettings);
             // --- Save VC Registration Settings ---
+
+            // --- Save STS Settings ---
+            dynamic stsSettingsJson = JsonConvert.DeserializeObject("{}"); ;
+            stsSettingsJson.StsSettings = JsonConvert.DeserializeObject("{}");
+            stsSettingsJson.StsSettings.
+            stsSettingsJson.StsSettings["SolutionOwnerId"] = vcRegistrationSettings.SolutionOwnerId;
+            stsSettingsJson.StsSettings["SolutionServiceId"] = vcRegistrationSettings.SolutionServiceId;
+            stsSettingsJson.StsSettings["Realm"] = vcRegistrationSettings.StsRealm;
+            stsSettingsJson.StsSettings["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
+            stsSettingsJson.StsSettings["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
+            configWriter.WriteSettings("sts-settings", stsSettingsJson);
+            // --- Save STS  Settings ---
             result = Ok();
          }
          catch (Exception exc)
