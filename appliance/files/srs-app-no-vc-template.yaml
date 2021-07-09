@@ -138,10 +138,34 @@ spec:
       containers:
         - image: "srs-admin-api:1.0"
           imagePullPolicy: IfNotPresent
-          name: srs-admin-api          
+          name: srs-admin-api
+          volumeMounts:
+            - name: admin-settings
+              mountPath: "/app/service/settings/admin-settings.json"
+              subPath: "admin-settings.json"
+              readOnly: true
+            - name: srs-tls
+              mountPath: "/app/service/settings/certs/tls"
+              readOnly: true
+            - name: sign-certificate
+              mountPath: "/app/service/settings/certs/sign"
+              readOnly: true
           ports:
             - containerPort: 5480
-              protocol: TCP      
+              protocol: TCP
+      volumes:
+        - name: sign-certificate
+          secret:
+            secretName: sign-cert
+        - name: srs-tls
+          secret:
+            secretName: srs-tls
+        - name: admin-settings
+          configMap:
+            name: admin-settings
+            items:
+            - key: admin-settings.json
+              path: admin-settings.json
 ---
 apiVersion: v1
 kind: Service

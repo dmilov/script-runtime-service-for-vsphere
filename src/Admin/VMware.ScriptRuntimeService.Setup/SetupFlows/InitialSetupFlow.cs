@@ -103,7 +103,7 @@ namespace VMware.ScriptRuntimeService.Setup.SetupFlows
                AdminSettings = new AdminSettings
                {
                   ServiceHostname = userInput.ServiceHostname,
-                  TlsCertificatePath = "/app/service/settings/certs/tls.crt",
+                  TlsCertificatePath = $"/app/service/settings/certs/tls/{Constants.TlsCertificateSecretName}.crt",
                   SolutionUserSigningCertificatePath = $"/app/service/settings/certs/{Constants.SignCertificateSecretName}.p12",
                   VCRegistrationConfigMap = "vcregistration-settings"
                }
