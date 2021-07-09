@@ -12,4 +12,9 @@ namespace VMware.ScriptRuntimeService.Setup
       public string SolutionUserSigningCertificatePath { get; set; }
       public string VCRegistrationConfigMap { get; set; }
    }
+
+   public class AdminWebApiSettings
+   {
+      public AdminSettings AdminSettings { get; set; }
+   }
 }

@@ -5,18 +5,13 @@
 
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.IdentityModel.Selectors;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using VMware.ScriptRuntimeService.Ls;
 using VMware.ScriptRuntimeService.Setup.ConfigFileWriters;
 using VMware.ScriptRuntimeService.Setup.K8sClient;
 using VMware.ScriptRuntimeService.Setup.SelfSignedCertificates;
-using VMware.ScriptRuntimeService.Setup.TlsTrustValidators;
-using VMware.ScriptRuntimeService.SsoAdmin;
 
 namespace VMware.ScriptRuntimeService.Setup.SetupFlows
 {
@@ -103,16 +98,17 @@ namespace VMware.ScriptRuntimeService.Setup.SetupFlows
             // --- TLS Certificate ---
 
             // --- Write Admin Settings ---
-            var adminSettings = new AdminSettings
+            var adminWebApiSettings = new AdminWebApiSettings
             {
-               ServiceHostname = userInput.ServiceHostname,
-               TlsCertificatePath = "/app/service/settings/certs/tls.crt",
-               SolutionUserSigningCertificatePath = $"/app/service/settings/certs/{Constants.SignCertificateSecretName}.p12",
-               VCRegistrationConfigMap = "vcregistration-settings"
+               AdminSettings = new AdminSettings
+               {
+                  ServiceHostname = userInput.ServiceHostname,
+                  TlsCertificatePath = "/app/service/settings/certs/tls.crt",
+                  SolutionUserSigningCertificatePath = $"/app/service/settings/certs/{Constants.SignCertificateSecretName}.p12",
+                  VCRegistrationConfigMap = "vcregistration-settings"
+               }
             };
-            dynamic seetingsFile = new JObject();
-            seetingsFile.AdminSettings = adminSettings;
-            configWriter.WriteSettings("admin-settings", seetingsFile);
+            configWriter.WriteSettings("admin-settings", adminWebApiSettings);
             // --- Write Admin Settings ---
 
          }
