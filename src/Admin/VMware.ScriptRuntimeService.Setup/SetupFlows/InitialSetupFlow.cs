@@ -5,6 +5,7 @@
 
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IdentityModel.Selectors;
 using System.IO;
@@ -109,7 +110,9 @@ namespace VMware.ScriptRuntimeService.Setup.SetupFlows
                SolutionUserSigningCertificatePath = $"/app/service/settings/certs/{Constants.SignCertificateSecretName}.p12",
                VCRegistrationConfigMap = "vcregistration-settings"
             };
-            configWriter.WriteSettings("admin-settings", adminSettings);
+            dynamic seetingsFile = new JObject();
+            seetingsFile.AdminSettings = adminSettings;
+            configWriter.WriteSettings("admin-settings", seetingsFile);
             // --- Write Admin Settings ---
 
          }
