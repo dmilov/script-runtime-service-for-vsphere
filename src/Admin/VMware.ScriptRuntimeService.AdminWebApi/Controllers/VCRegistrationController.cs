@@ -43,7 +43,7 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
          _k8sSettings = _configuration.
                GetSection("K8sSettings").
                Get<K8sSettings>();
-         if (_k8sSettings.ClusterEndpoint == null)
+         if (_k8sSettings == null || _k8sSettings.ClusterEndpoint == null)
          {
             _k8sSettings = null;
          }
