@@ -150,13 +150,11 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             // --- Save VC Registration Settings ---
 
             // --- Save STS Settings ---
-            dynamic stsSettingsJson = JsonConvert.DeserializeObject("{}"); ;
-            stsSettingsJson.StsSettings = JsonConvert.DeserializeObject("{}");            
-            stsSettingsJson.StsSettings["SolutionOwnerId"] = vcRegistrationSettings.SolutionOwnerId;
-            stsSettingsJson.StsSettings["SolutionServiceId"] = vcRegistrationSettings.SolutionServiceId;
-            stsSettingsJson.StsSettings["Realm"] = vcRegistrationSettings.StsRealm;
-            stsSettingsJson.StsSettings["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
-            stsSettingsJson.StsSettings["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
+            dynamic stsSettingsJson = JsonConvert.DeserializeObject("{}");         
+            stsSettingsJson["SolutionOwnerId"] = vcRegistrationSettings.SolutionOwnerId;
+            stsSettingsJson["SolutionServiceId"] = vcRegistrationSettings.SolutionServiceId;
+            stsSettingsJson["Realm"] = vcRegistrationSettings.StsRealm;
+            stsSettingsJson["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
             configWriter.WriteSettings("sts-settings", stsSettingsJson);
             // --- Save STS  Settings ---
             result = Ok();
