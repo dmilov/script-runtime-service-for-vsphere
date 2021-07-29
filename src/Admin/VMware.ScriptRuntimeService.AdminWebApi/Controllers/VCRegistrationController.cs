@@ -154,7 +154,9 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             stsSettingsJson["SolutionServiceId"] = vcRegistrationSettings.SolutionServiceId;
             stsSettingsJson["Realm"] = vcRegistrationSettings.StsRealm;
             stsSettingsJson["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
-            configWriter.WriteSettings("sts-settings", stsSettingsJson);
+            dynamic stsSettingsPropJson = JsonConvert.DeserializeObject("{}");
+            stsSettingsPropJson["StsSettings"] = stsSettingsJson;
+            configWriter.WriteSettings("sts-settings", stsSettingsPropJson);
             // --- Save STS  Settings ---
 
             // --- Restart SRS API Gateway ---
@@ -244,7 +246,9 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
                stsSettingsJson["SolutionServiceId"] = string.Empty;
                stsSettingsJson["Realm"] = string.Empty;
                stsSettingsJson["StsServiceEndpoint"] = string.Empty;
-               configWriter.WriteSettings("sts-settings", stsSettingsJson);
+               dynamic stsSettingsPropJson = JsonConvert.DeserializeObject("{}");
+               stsSettingsPropJson["StsSettings"] = stsSettingsJson;
+               configWriter.WriteSettings("sts-settings", stsSettingsPropJson);               
                // --- Clean STS  Settings ---
 
                // --- Clean trusted CA certificates ---
