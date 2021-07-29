@@ -111,6 +111,19 @@ namespace VMware.ScriptRuntimeService.Setup.SetupFlows
             configWriter.WriteSettings("admin-settings", adminWebApiSettings);
             // --- Write Admin Settings ---
 
+            // --- Write empty STS Settings ---
+            dynamic stsSettingsJson = JsonConvert.DeserializeObject("{}");
+            stsSettingsJson["SolutionOwnerId"] = "";
+            stsSettingsJson["SolutionServiceId"] = "";
+            stsSettingsJson["Realm"] = "";
+            stsSettingsJson["StsServiceEndpoint"] = "";
+            configWriter.WriteSettings("sts-settings", stsSettingsJson);
+            // --- Write empty STS  Settings ---
+
+            // --- Write empty trusted CA certificates ---
+            configWriter.WriteTrustedCACertificates(new string[] { string.Empty });
+            // ---Write empty trusted CA certificates ---
+
          }
          catch (InvalidUserInputException exc)
          {

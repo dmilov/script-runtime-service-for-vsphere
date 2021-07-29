@@ -101,7 +101,7 @@ metadata:
   namespace: script-runtime-service
 rules:
 - apiGroups: [""]
-  resources: ["configmaps", "secrets"]
+  resources: ["pods", "configmaps", "secrets"]
   verbs: ["get", "list", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

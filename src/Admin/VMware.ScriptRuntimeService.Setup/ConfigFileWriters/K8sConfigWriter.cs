@@ -49,9 +49,16 @@ namespace VMware.ScriptRuntimeService.Setup.ConfigFileWriters
          _logger.LogInformation($"Writing k8s config map with Trusted CA certificates");
          var data = new Dictionary<string, string>();
          foreach (var encodedCert in encodedCertificates) {
-            var cert = new X509Certificate2(Encoding.ASCII.GetBytes(encodedCert));
-            var fileName = $"{cert.GetCertHashString()}.0";
-            data[fileName] = encodedCert;
+            if (string.Empty == encodedCert)
+            {
+               // Empty config map is requested
+               data["none"] = "";
+            }
+            else {
+               var cert = new X509Certificate2(Encoding.ASCII.GetBytes(encodedCert));
+               var fileName = $"{cert.GetCertHashString()}.0";
+               data[fileName] = encodedCert;
+            }            
          }
          _k8sClient.RecreateConfigMap(Constants.TrustedCACertificatesConfigMapName, data);
       }

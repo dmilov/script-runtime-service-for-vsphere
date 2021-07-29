@@ -71,10 +71,9 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
       [HttpPost]
       [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]
       [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status500InternalServerError)]
-      public ActionResult<VCRegistrationInfo> Post([FromBody] VCRegistrationInfo vcRegistrationInfo)
+      public ActionResult Post([FromBody] VCRegistrationInfo vcRegistrationInfo)
       {
-         ActionResult<VCRegistrationInfo> result = null;
-
+         ActionResult result;
          try
          {
             _logger.LogDebug($"User Input VC: {vcRegistrationInfo.VCAddress}");
@@ -157,7 +156,34 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             stsSettingsJson["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
             configWriter.WriteSettings("sts-settings", stsSettingsJson);
             // --- Save STS  Settings ---
+
+            // --- Restart SRS API Gateway ---
+            new K8sServiceController(_loggerFactory, _k8sSettings).RestartSrsService();
+            // --- Restart SRS API Gateway ---
             result = Ok();
+         }
+         catch (Exception exc)
+         {
+            result = StatusCode(500, new ErrorDetails(exc));
+         }
+
+         return result;
+      }
+
+      [HttpGet]
+      [ProducesResponseType(typeof(VCRegistrationInfo), StatusCodes.Status200OK)]
+      [ProducesResponseType(typeof(ErrorDetails), StatusCodes.Status500InternalServerError)]
+      public ActionResult<VCRegistrationInfo> Get()
+      {
+         ActionResult<VCRegistrationInfo> result;
+         try
+         {
+            var configWriter = new K8sConfigWriter(_loggerFactory, _k8sSettings);
+            var vcRegSettings = configWriter.ReadSettings<VCRegistrationSettings>(_adminSettings.VCRegistrationConfigMap);            
+            result = Ok(new VCRegistrationInfo()
+            {
+               VCAddress = vcRegSettings?.VCenterServer
+            });
          }
          catch (Exception exc)
          {
@@ -212,7 +238,25 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
 
                configWriter.DeleteSettings(_adminSettings.VCRegistrationConfigMap);
 
-            } else
+               // --- Clean STS Settings ---
+               dynamic stsSettingsJson = JsonConvert.DeserializeObject("{}");
+               stsSettingsJson["SolutionOwnerId"] = string.Empty;
+               stsSettingsJson["SolutionServiceId"] = string.Empty;
+               stsSettingsJson["Realm"] = string.Empty;
+               stsSettingsJson["StsServiceEndpoint"] = string.Empty;
+               configWriter.WriteSettings("sts-settings", stsSettingsJson);
+               // --- Clean STS  Settings ---
+
+               // --- Clean trusted CA certificates ---
+               configWriter.WriteTrustedCACertificates(new string[] { string.Empty });
+               // --- Clean trusted CA certificates ---
+
+               // --- Restart SRS API Gateway ---
+               new K8sServiceController(_loggerFactory, _k8sSettings).RestartSrsService();
+               // --- Restart SRS API Gateway ---
+
+            }
+            else
             {
                result = StatusCode(StatusCodes.Status404NotFound, new ErrorDetails(new Exception($"No SRS registration found for vCenter Server: {vcRegistrationInfo.VCAddress}")));
             }

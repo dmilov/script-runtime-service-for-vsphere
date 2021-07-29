@@ -190,5 +190,17 @@ namespace VMware.ScriptRuntimeService.Setup.K8sClient
       public k8s.Models.V1SecretList ListSecrets() {
          return _k8sClient.ListNamespacedSecret(_namespace);
       }
+
+      public k8s.Models.V1Pod GetPod(string label)
+      {
+         var podList = _k8sClient.ListNamespacedPod(_namespace, labelSelector: label);
+
+         return podList?.Items?.FirstOrDefault<k8s.Models.V1Pod>();
+      }
+
+      public void DeletePod(k8s.Models.V1Pod pod)
+      {
+         _k8sClient.DeleteNamespacedPodAsync(pod.Metadata.Name, _namespace);
+      }
    }
 }
