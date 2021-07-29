@@ -154,6 +154,7 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
             stsSettingsJson["SolutionServiceId"] = vcRegistrationSettings.SolutionServiceId;
             stsSettingsJson["Realm"] = vcRegistrationSettings.StsRealm;
             stsSettingsJson["StsServiceEndpoint"] = vcRegistrationSettings.StsServiceEndpoint;
+            stsSettingsJson["SolutionUserSigningCertificatePath"] = Constants.StsSettings_SolutionUserSigningCertificatePath;
             dynamic stsSettingsPropJson = JsonConvert.DeserializeObject("{}");
             stsSettingsPropJson["StsSettings"] = stsSettingsJson;
             configWriter.WriteSettings("sts-settings", stsSettingsPropJson);
@@ -246,6 +247,7 @@ namespace VMware.ScriptRuntimeService.AdminWebApi.Controllers
                stsSettingsJson["SolutionServiceId"] = string.Empty;
                stsSettingsJson["Realm"] = string.Empty;
                stsSettingsJson["StsServiceEndpoint"] = string.Empty;
+               stsSettingsJson["SolutionUserSigningCertificatePath"] = string.Empty;
                dynamic stsSettingsPropJson = JsonConvert.DeserializeObject("{}");
                stsSettingsPropJson["StsSettings"] = stsSettingsJson;
                configWriter.WriteSettings("sts-settings", stsSettingsPropJson);               
