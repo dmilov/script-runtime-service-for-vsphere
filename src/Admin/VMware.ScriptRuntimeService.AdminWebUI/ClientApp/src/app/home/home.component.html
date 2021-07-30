@@ -1,0 +1,31 @@
+<h1>VC Registration</h1>
+
+<!-- Modal -->
+<div class="container">
+  <!-- <button type="button" class="btn btn-primary" data-toggle="modal" (click)="open()" data-target="#myModal">
+    Open modal
+  </button>-->
+
+  <!-- The Modal -->
+
+
+</div>
+
+<form class="clr-form clr-form-horizontal" #formcontrol="ngForm">
+  <clr-input-container>
+    <label>VC Address</label>
+    <input placeholder="vCenter Server Address" clrInput [(ngModel)]="vcaddress" name="vcaddress" required />
+    <clr-control-helper>vCenter Server Address IP/FQDN to which SRS will be registered.</clr-control-helper>
+  </clr-input-container>
+  <clr-input-container>
+    <label>User Name</label>
+    <input placeholder="User Name" clrInput [(ngModel)]="username" name="username" required />
+    <clr-control-helper>vCenter Server user name with administrator priveleges.</clr-control-helper>
+  </clr-input-container>
+  <clr-password-container>
+    <label>Password</label>
+    <input clrPassword placeholder="Password" name="password" [(ngModel)]="password" required />
+  </clr-password-container>
+  <button class="btn btn-link" [(disabled)]="!formcontrol.form.valid || registerInProgress" (click)="onRegister()" type="submit">Register</button>
+</form>
+
